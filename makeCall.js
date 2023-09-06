@@ -2,7 +2,7 @@ const twilio = require('twilio');
 
 // Your Twilio Account SID and Auth Token
 const accountSid = 'AC6963d653738bdd76cfd48b5ce34a5e26';
-const authToken = '2e0acade7ee9b460767b6ae519b07136';
+const authToken = '004779eccedae95f805be2d51e417906';
 
 // Create a Twilio client
 const client = twilio(accountSid, authToken);

@@ -6,7 +6,7 @@ const port = 3000; // Port number of your choice
 
 
 // Middleware to parse JSON request body
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
 app.post('/voice', (request, response) => {
@@ -41,7 +41,7 @@ app.post('/handle-user-input', (request, response) => {
 
   // Get the user's speech input
   const userSpeech = request.body.SpeechResult ? request.body.SpeechResult.toLowerCase() : '';
-
+  console.log('Request Body:', request.body);
   // Check if the user's speech contains "how are you"
   if (userSpeech.includes('hello')) {
     twiml.say('Hello siva prasad, how are you?');
