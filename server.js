@@ -8,17 +8,35 @@ const port = 3000; // Port number of your choice
 // Middleware to parse JSON request body
 app.use(express.urlencoded({ extended: true }));
 
-// Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
-app.post('/voice', (request, response) => {
-    console.log('Request Body:', request.body);
-  // Create a Twilio VoiceResponse object to handle the call
+// Function to handle user input
+function handleUserInput(response, userSpeech) {
   const twiml = new VoiceResponse();
 
-  // Use the <Say> element to send a message to the caller // default message on lifting the call
-//   twiml.say('Hello siva prasad,how are you');
+  // Check if the user's speech contains "hello"
+  if (userSpeech.includes('hello')) {
+    twiml.say('Hello siva prasad, how are you?');
+    // Prompt for more input
+    gatherUserInput(twiml);
+  } else if (userSpeech.includes('ok')) {
+    // If the user is satisfied, respond with thanks and end the call
+    twiml.say("Thank you for using our service. Goodbye!");
+    twiml.hangup();
+  } else {
+    // Respond with a default message if the user's input doesn't match
+    twiml.say("I'm sorry. I didn't quite grasp what you just said");
+    // Prompt for more input
+    gatherUserInput(twiml);
+  }
 
-// Use the <Gather> element to collect user input
-const gather = twiml.gather({
+  // Render the response as XML
+  response.type('text/xml');
+  response.send(twiml.toString());
+}
+
+
+// Function to gather user input
+function gatherUserInput(twiml) {
+  const gather = twiml.gather({
     input: 'speech', // Collect speech input
     action: '/handle-user-input', // URL to handle user input
     timeout: 5, // Wait for user input for 5 seconds
@@ -26,9 +44,31 @@ const gather = twiml.gather({
 
   // Prompt the user for input
   gather.say('Please say something.');
+}
 
-  // If there's no user input, redirect to the voice route again
-  twiml.redirect('/voice');
+// Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
+app.post('/voice', (request, response) => {
+    console.log('Request Body:', request.body);
+  // Create a Twilio VoiceResponse object to handle the call
+  const twiml = new VoiceResponse();
+
+    // Start gathering user input
+    gatherUserInput(twiml);
+  // Use the <Say> element to send a message to the caller // default message on lifting the call
+//   twiml.say('Hello siva prasad,how are you');
+
+// // Use the <Gather> element to collect user input
+// const gather = twiml.gather({
+//     input: 'speech', // Collect speech input
+//     action: '/handle-user-input', // URL to handle user input
+//     timeout: 5, // Wait for user input for 5 seconds
+//   });
+
+//   // Prompt the user for input
+//   gather.say('Please say something.');
+
+//   // If there's no user input, redirect to the voice route again
+//   twiml.redirect('/voice');
 
   // Render the response as XML in reply to the webhook request
   response.type('text/xml');
@@ -36,23 +76,29 @@ const gather = twiml.gather({
 });
 
 // Create a route to handle user input
+// app.post('/handle-user-input', (request, response) => {
+//   const twiml = new VoiceResponse();
+
+//   // Get the user's speech input
+//   const userSpeech = request.body.SpeechResult ? request.body.SpeechResult.toLowerCase() : '';
+//   console.log('Request Body:', request.body);
+//   // Check if the user's speech contains "how are you"
+//   if (userSpeech.includes('hello')) {
+//     twiml.say('Hello siva prasad, how are you?');
+//   } else {
+//     // Respond with a default message if the user's input doesn't match
+//     twiml.say("Hello siva prasad, I'm just a Twilio bot.");
+//   }
+
+//   // Render the response as XML in reply to the webhook request
+//   response.type('text/xml');
+//   response.send(twiml.toString());
+// });
 app.post('/handle-user-input', (request, response) => {
-  const twiml = new VoiceResponse();
-
-  // Get the user's speech input
   const userSpeech = request.body.SpeechResult ? request.body.SpeechResult.toLowerCase() : '';
-  console.log('Request Body:', request.body);
-  // Check if the user's speech contains "how are you"
-  if (userSpeech.includes('hello')) {
-    twiml.say('Hello siva prasad, how are you?');
-  } else {
-    // Respond with a default message if the user's input doesn't match
-    twiml.say("Hello siva prasad, I'm just a Twilio bot.");
-  }
-
-  // Render the response as XML in reply to the webhook request
-  response.type('text/xml');
-  response.send(twiml.toString());
+  
+  // Handle user input based on the conversation flow
+  handleUserInput(response, userSpeech);
 });
 
 // Start the Express server
