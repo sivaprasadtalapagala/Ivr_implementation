@@ -12,21 +12,23 @@ app.use(express.urlencoded({ extended: true }));
 function handleUserInput(response, userSpeech) {
   const twiml = new VoiceResponse();
 
+  console.log("userSpeech",userSpeech.toLowerCase())
+
   // Check if the user's speech contains "hello"
   if (userSpeech.includes('hello')) {
     twiml.say('Hello siva prasad, how are you?');
     // Prompt for more input
     gatherUserInput(twiml);
   } else if (userSpeech.includes('ok')) {
-    // If the user is satisfied, respond with thanks and end the call
-    twiml.say("Thank you for using our service. Goodbye!");
-    twiml.hangup();
-  } else {
+   // If the user is satisfied, respond with thanks and end the call
+   twiml.say("Thank you for using our service. Goodbye!");
+   twiml.hangup();
+ } else {
     // Respond with a default message if the user's input doesn't match
-    twiml.say("I'm sorry. I didn't quite grasp what you just said");
-    // Prompt for more input
-    gatherUserInput(twiml);
-  }
+   twiml.say("I'm sorry. I didn't quite grasp what you just said");
+   // Prompt for more input
+   gatherUserInput(twiml);
+ }
 
   // Render the response as XML
   response.type('text/xml');
@@ -43,7 +45,7 @@ function gatherUserInput(twiml) {
   });
 
   // Prompt the user for input
-  gather.say('Please say something.');
+  gather.say('Hello siva,how can i help you?');
 }
 
 // Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
@@ -54,23 +56,7 @@ app.post('/voice', (request, response) => {
 
     // Start gathering user input
     gatherUserInput(twiml);
-  // Use the <Say> element to send a message to the caller // default message on lifting the call
-//   twiml.say('Hello siva prasad,how are you');
-
-// // Use the <Gather> element to collect user input
-// const gather = twiml.gather({
-//     input: 'speech', // Collect speech input
-//     action: '/handle-user-input', // URL to handle user input
-//     timeout: 5, // Wait for user input for 5 seconds
-//   });
-
-//   // Prompt the user for input
-//   gather.say('Please say something.');
-
-//   // If there's no user input, redirect to the voice route again
-//   twiml.redirect('/voice');
-
-  // Render the response as XML in reply to the webhook request
+ 
   response.type('text/xml');
   response.send(twiml.toString());
 });
