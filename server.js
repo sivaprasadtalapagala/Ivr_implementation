@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
 
 const app = express();
@@ -13,18 +14,18 @@ function handleUserInput(response, userSpeech) {
 
   // Check if the user's speech contains "hello"
   if (userSpeech.includes('1')) {
-    twiml.say('You selected english,Hello siva prasad, how are you?');
+    twiml.say('You selected english,I am chatbot powered by Cerinastudio.');
     // Prompt for more input
     // gatherUserInput(twiml);
     gatherSpeechInput(twiml)
   } else if (userSpeech.includes('2')) {
        // If the user is satisfied, respond with thanks and end the call
-       twiml.say("You selected Hindi,how can i help you");
+       twiml.say("You selected Hindi,I am chatbot powered by Cerinastudio.");
        gatherSpeechInput(twiml)
       //  twiml.hangup();
      }else if (userSpeech.includes('3')) {
       // If the user is satisfied, respond with thanks and end the call
-      twiml.say("You selected Tamil,how can i help you");
+      twiml.say("You selected Tamil,I am chatbot powered by Cerinastudio.");
      //  twiml.hangup();
     }else {
     // Respond with a default message if the user's input doesn't match
@@ -38,31 +39,68 @@ function handleUserInput(response, userSpeech) {
   response.type('text/xml');
   response.send(twiml.toString());
 }
-function handleUserSpeechInput(response, userSpeech) {
-  const twiml = new VoiceResponse();
 
+
+async function handleUserSpeechInput(response, userSpeech) {
   console.log("userSpeech",userSpeech.toLowerCase())
+  try {
+    // Make an HTTP request to the API
+    const apiUrl = 'http://10.0.52.203:7200/getResponse?Targetlanguage=English';
+    const requestBody = {
+      userquery: userSpeech.toLowerCase(), // Replace userquery with userSpeech
+    };
 
-  // Check if the user's speech contains "hello"
-  if (userSpeech.includes('hello')) {
-    twiml.say('Hello siva prasad, how are you?');
+    const apiResponse = await axios.post(apiUrl, requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Extract the response from the API
+    const apiData = apiResponse.data;
+
+    // Create a TwiML response
+    const twiml = new VoiceResponse();
+
+    // Use the response from the API in the TwiML
+    twiml.say(apiData.response);
     // Prompt for more input
-    gatherSpeechInput(twiml);
-  } else if (userSpeech.includes('ok')) {
-   // If the user is satisfied, respond with thanks and end the call
-   twiml.say("Thank you for using our service. Goodbye!");
-   twiml.hangup();
- } else {
-    // Respond with a default message if the user's input doesn't match
-   twiml.say("I'm sorry. I didn't quite grasp what you just said");
-   // Prompt for more input
    gatherSpeechInput(twiml);
- }
 
-  // Render the response as XML
-  response.type('text/xml');
-  response.send(twiml.toString());
+    // Render the response as XML
+    response.type('text/xml');
+    response.send(twiml.toString());
+  } catch (error) {
+    console.error('Error:', error);
+    // Handle errors here, e.g., return an error TwiML response
+    response.status(500).send('An error occurred.');
+  }
 }
+// function handleUserSpeechInput(response, userSpeech) {
+//   const twiml = new VoiceResponse();
+
+//   console.log("userSpeech",userSpeech.toLowerCase())
+
+//   // Check if the user's speech contains "hello"
+//   if (userSpeech.includes('hello')) {
+//     twiml.say('Hello siva prasad, how are you?');
+//     // Prompt for more input
+//     gatherSpeechInput(twiml);
+//   } else if (userSpeech.includes('ok')) {
+//    // If the user is satisfied, respond with thanks and end the call
+//    twiml.say("Thank you for using our service. Goodbye!");
+//    twiml.hangup();
+//  } else {
+//     // Respond with a default message if the user's input doesn't match
+//    twiml.say("I'm sorry. I didn't quite grasp what you just said");
+//    // Prompt for more input
+//    gatherSpeechInput(twiml);
+//  }
+
+//   // Render the response as XML
+//   response.type('text/xml');
+//   response.send(twiml.toString());
+// }
 
 // Function to gather user input
 function gatherUserInput(twiml) {
@@ -85,7 +123,7 @@ function gatherSpeechInput(twiml) {
   });
 
   // Prompt the user for input
-  gather.say('Hello siva,how can i help you?');
+  gather.say('Hello,how can i help you?');
 }
 
 // Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
