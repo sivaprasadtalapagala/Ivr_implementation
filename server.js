@@ -19,9 +19,14 @@ function handleUserInput(response, userSpeech) {
     gatherSpeechInput(twiml)
   } else if (userSpeech.includes('2')) {
        // If the user is satisfied, respond with thanks and end the call
-       twiml.say("Thank you for using our service. Goodbye!");
+       twiml.say("You selected Hindi,how can i help you");
+       gatherSpeechInput(twiml)
       //  twiml.hangup();
-     }else {
+     }else if (userSpeech.includes('3')) {
+      // If the user is satisfied, respond with thanks and end the call
+      twiml.say("You selected Tamil,how can i help you");
+     //  twiml.hangup();
+    }else {
     // Respond with a default message if the user's input doesn't match
     twiml.say("I'm sorry. I didn't quite grasp what you just said");
     // Prompt for more input
