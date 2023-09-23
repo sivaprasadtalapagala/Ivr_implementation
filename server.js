@@ -63,9 +63,19 @@ async function handleUserSpeechInput(response, userSpeech) {
     const twiml = new VoiceResponse();
 
     // Use the response from the API in the TwiML
-    twiml.say(apiData.response);
+     // Check if apiData.response is empty
+     if (apiData.response.trim() === '') {
+      // Fallback message when the response is empty
+      twiml.say("I'm a bit confused by that last part.");
+      gatherSpeechInput(twiml);
+    } else {
+      // Use the response from the API in the TwiML
+      twiml.say(apiData.response);
+      gatherSpeechInput(twiml);
+    }
+    // twiml.say(apiData.response);
     // Prompt for more input
-   gatherSpeechInput(twiml);
+  //  gatherSpeechInput(twiml);
 
     // Render the response as XML
     response.type('text/xml');
@@ -104,12 +114,13 @@ async function handleUserSpeechInput(response, userSpeech) {
 
 // Function to gather user input
 function gatherUserInput(twiml) {
+  console.log("twiml",twiml)
   const gather = twiml.gather({
     input: 'dtmf', // Collect DTMF (keypad) input
     action: '/handle-user-input', // URL to handle user input
     timeout: 5, // Wait for user input for 5 seconds
   });
-
+  console.log('gather ----------------',gather);
   // Prompt the user for input
   gather.say('Please select 1 for English, 2 for Hindi, or 3 for Tamil.');
 }
@@ -128,6 +139,7 @@ function gatherSpeechInput(twiml) {
 
 // Create a route that will handle Twilio webhook requests, sent as an HTTP POST to /voice in our application
 app.post('/user/voice', (request, response) => {
+  console.log("request_body",request.body)
   // Create a Twilio VoiceResponse object to handle the call
   const twiml = new VoiceResponse();
 
@@ -141,6 +153,7 @@ app.post('/user/voice', (request, response) => {
 
 // Create a route to handle user input
 app.post('/handle-user-input', (request, response) => {
+  console.log("handle user input",request)
   const userSpeech = request.body.Digits;
   
   // Handle user input based on the conversation flow
