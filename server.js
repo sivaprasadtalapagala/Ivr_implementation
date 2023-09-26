@@ -7,11 +7,11 @@ const port = 3000; // Port number of your choice
 
 // Middleware to parse JSON request body
 app.use(express.urlencoded({ extended: true }));
-
+let gatherInput=null;
 // Function to handle user input
 function handleUserInput(response, userSpeech) {
   const twiml = new VoiceResponse();
-
+if(gatherInput===1){
   // Check if the user's speech contains "hello"
   if (userSpeech.includes('1')) {
     twiml.say('You selected english,I am chatbot powered by Cerinastudio.');
@@ -34,7 +34,25 @@ function handleUserInput(response, userSpeech) {
     // gatherUserInput(twiml);
     gatherSpeechInput(twiml)
   }
-
+  gatherInput=2;
+}else{
+  if (userSpeech.includes('1')) {
+    twiml.say("You selected Personal Loan. Here are the details: Loan Amount of 5 lakhs with an Interest Rate of 10%, and a Loan Term of up to 5 years.");
+    gatherSpeechInput(twiml)
+  } else if (userSpeech.includes('2')) {
+    twiml.say("You selected Education Loan. Here are the details: Loan Amount varies based on the course and institution, competitive Interest Rates, and flexible Loan Term options.");
+    gatherSpeechInput(twiml)
+  } else if (userSpeech.includes('3')) {
+    twiml.say("You selected Vehicle Loan. Here are the details: Loan Amount of up to 80% of the vehicle value, competitive Interest Rates, and a Loan Term of up to 7 years.");
+    gatherSpeechInput(twiml)
+  } else if (userSpeech.includes('4')) {
+    twiml.say("You selected House Loan. Here are the details: Loan Amount based on property value and eligibility, competitive Interest Rates, and a Loan Term of up to 25 years.");
+    gatherSpeechInput(twiml)
+  } else {
+    twiml.say("Invalid Input provided");
+  }
+  gatherInput=3;
+}
   // Render the response as XML
   response.type('text/xml');
   response.send(twiml.toString());
@@ -71,7 +89,8 @@ async function handleUserSpeechInput(response, userSpeech) {
     } else {
       // Use the response from the API in the TwiML
       twiml.say(apiData.response);
-      gatherSpeechInput(twiml);
+      // gatherSpeechInput(twiml);
+      gatherUserInput(twiml);
     }
     // twiml.say(apiData.response);
     // Prompt for more input
@@ -122,7 +141,15 @@ function gatherUserInput(twiml) {
   });
   console.log('gather ----------------',gather);
   // Prompt the user for input
-  gather.say('Please select 1 for English, 2 for Hindi, or 3 for Tamil.');
+  // gather.say('Please select 1 for English, 2 for Hindi, or 3 for Tamil.');
+  if (gatherInput === 1) {
+    gather.say('Please select 1 for English, 2 for Hindi, or 3 for Tamil.');
+  } else if (gatherInput === 2) {
+    gather.say('You are eligible for loans. Press 1 for Personal Loan, 2 for Education Loan, 3 for Vehicle Loan, or 4 for House Loan.');
+  } else {
+    // Provide a default prompt if the input is not recognized
+    gather.say('Hello how can i help you');
+  }
 }
 
 //gather speech input 
@@ -142,7 +169,7 @@ app.post('/user/voice', (request, response) => {
   console.log("request_body",request.body)
   // Create a Twilio VoiceResponse object to handle the call
   const twiml = new VoiceResponse();
-
+  gatherInput=1;
   // Start gathering user input
   gatherUserInput(twiml);
 
